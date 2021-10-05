@@ -29,7 +29,6 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
     override fun start() {
         val pingRepeatWorkRequest = PeriodicWorkRequest
             .Builder(PingWorker::class.java, clientComms!!.keepAlive / 100, TimeUnit.MILLISECONDS)
-            .addTag(PING_WORKER_TAG)
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.METERED)
@@ -42,7 +41,7 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
 
     override fun stop() {
         Timber.d("Unregister AlarmReceiver to MqttService ${clientComms!!.client.clientId}")
-        workManager.cancelAllWorkByTag(PING_WORKER_TAG)
+        workManager.cancelUniqueWork(PING_JOB)
     }
 
     override fun schedule(delayInMilliseconds: Long) {
@@ -51,7 +50,6 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
     }
 
     companion object {
-        private const val PING_WORKER_TAG = "PING_WORKER_TAG"
         private const val PING_JOB = "PING_JOB"
     }
 
