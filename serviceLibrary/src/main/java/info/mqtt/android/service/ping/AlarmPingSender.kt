@@ -28,7 +28,7 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
 
     override fun start() {
         val pingRepeatWorkRequest = PeriodicWorkRequest
-            .Builder(PingWorker::class.java, clientComms!!.keepAlive / 100, TimeUnit.MILLISECONDS)
+            .Builder(PingWorker::class.java, clientComms!!.keepAlive, TimeUnit.MILLISECONDS)
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.METERED)
