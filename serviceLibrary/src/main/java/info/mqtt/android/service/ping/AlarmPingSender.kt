@@ -79,7 +79,11 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
         val nextAlarmInMilliseconds = SystemClock.elapsedRealtime() + delayInMilliseconds
         Timber.d("Schedule next alarm at $nextAlarmInMilliseconds ms")
         val alarmManager = service.getSystemService(Service.ALARM_SERVICE) as AlarmManager
-        if (Build.VERSION.SDK_INT >= 23) {
+        if(Build.VERSION.SDK_INT >= 31){
+            Timber.d("Alarm schedule using setAndAllowWhileIdle, next: $delayInMilliseconds")
+            alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextAlarmInMilliseconds, pendingIntent)
+        }
+        else if (Build.VERSION.SDK_INT >= 23) {
             // In SDK 23 and above, dosing will prevent setExact, setExactAndAllowWhileIdle will force
             // the device to run this task whilst dosing.
             Timber.d("Alarm schedule using setExactAndAllowWhileIdle, next: $delayInMilliseconds")
