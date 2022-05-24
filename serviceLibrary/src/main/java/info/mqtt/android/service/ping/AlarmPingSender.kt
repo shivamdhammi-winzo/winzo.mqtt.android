@@ -13,7 +13,10 @@ import android.os.PowerManager
 import android.os.SystemClock
 import info.mqtt.android.service.MqttService
 import info.mqtt.android.service.MqttServiceConstants
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttException
@@ -79,18 +82,18 @@ internal class AlarmPingSender(val service: MqttService) : MqttPingSender {
         val nextAlarmInMilliseconds = SystemClock.elapsedRealtime() + delayInMilliseconds
         Timber.d("Schedule next alarm at $nextAlarmInMilliseconds ms")
         val alarmManager = service.getSystemService(Service.ALARM_SERVICE) as AlarmManager
-        if(Build.VERSION.SDK_INT >= 31){
+        if (Build.VERSION.SDK_INT >= 31) {
             Timber.d("Alarm schedule using setAndAllowWhileIdle, next: $delayInMilliseconds")
             alarmManager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextAlarmInMilliseconds, pendingIntent)
-        }
-        else if (Build.VERSION.SDK_INT >= 23) {
+        } else if (Build.VERSION.SDK_INT >= 23) {
             // In SDK 23 and above, dosing will prevent setExact, setExactAndAllowWhileIdle will force
             // the device to run this task whilst dosing.
             Timber.d("Alarm schedule using setExactAndAllowWhileIdle, next: $delayInMilliseconds")
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextAlarmInMilliseconds, pendingIntent)
-        } else
+        } else {
             Timber.d("Alarm schedule using setExact, delay: $delayInMilliseconds")
-        alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextAlarmInMilliseconds, pendingIntent)
+            alarmManager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, nextAlarmInMilliseconds, pendingIntent)
+        }
     }
 
     fun backgroundExecute(comms: ClientComms?): Boolean {
